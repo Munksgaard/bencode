@@ -232,5 +232,8 @@ mod tests {
         let mut m = HashMap::new();
         m.insert(b"foo".to_vec(), Integer(42));
         assert_eq!(format!("{}", Dict(m)), "d3:fooi42ee");
+
+        let s = "d3:bar4:spam3:fooi42ee".to_string();
+        assert_eq!(format!("{}", super::parse(s.as_bytes())), s);
     }
 }
