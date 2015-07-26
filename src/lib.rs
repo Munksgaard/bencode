@@ -171,6 +171,7 @@ pub fn parse(s: &[u8]) -> Bencoded {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
     use super::Bencoded::*;
 
     #[test]
@@ -192,8 +193,6 @@ mod tests {
 
     #[test]
     fn parse_dict() {
-        use std::collections::HashMap;
-
         let mut m = HashMap::new();
         m.insert(b"n".to_vec(), Integer(42));
         assert_eq!(super::parse_dict(b"d1:ni42ee", 1), (Dict(m), 9));
@@ -201,8 +200,6 @@ mod tests {
 
     #[test]
     fn parse_bencoded() {
-        use std::collections::HashMap;
-
         assert_eq!(super::parse_bencoded(b"i42e", 0), (Integer(42), 4));
         assert_eq!(super::parse_bencoded(b"5:hello", 0),
                    (Bytestring(b"hello".to_vec()), 7));
@@ -218,8 +215,6 @@ mod tests {
 
     #[test]
     fn parse_big_dict() {
-        use std::collections::HashMap;
-
         let mut m = HashMap::new();
         m.insert(b"bar".to_vec(), Bytestring(b"spam".to_vec()));
         m.insert(b"foo".to_vec(), Integer(42));
