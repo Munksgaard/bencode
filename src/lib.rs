@@ -2,6 +2,7 @@
 //!
 //! A library for decoding bencoded strings.
 
+#![feature(vec_push_all)]
 
 use std::collections::HashMap;
 use std::fmt;
@@ -36,6 +37,48 @@ impl Bencoded {
         } else {
             None
         }
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut res = Vec::new();
+        match *self {
+            Integer(n) => {
+                res.push(b'i');
+                res.push_all(n.to_string().as_bytes());
+                res.push(b'e');
+            },
+            Bytestring(ref v) => {
+                res.push_all(v.len().to_string().as_bytes());
+                res.push(b':');
+                res.push_all(v);
+            }
+            List(ref v) => {
+                res.push(b'l');
+                for elem in v {
+                    res.push_all(&elem.to_bytes())
+                }
+                res.push(b'e');
+            }
+            Dict(ref map) => {
+                let mut v = Vec::new();
+                for pair in map {
+                    v.push(pair);
+                }
+
+                v.sort_by(|&(a, _), &(b, _)| a.cmp(b));
+
+                res.push(b'd');
+
+                for (key, val) in v {
+                    res.push_all(&Bytestring(key.clone()).to_bytes());
+                    res.push_all(&val.to_bytes());
+                }
+
+                res.push(b'e');
+            }
+
+        }
+        res
     }
 }
 
@@ -222,4 +265,24 @@ mod tests {
         m.insert(b"n".to_vec(), Integer(42));
         assert_eq!(super::parse_bencoded(b"d1:ni42ee", 0), (Dict(m), 9));
     }
+
+    #[test]
+    fn test_to_bytes() {
+        let bytes = b"i42e";
+        assert_eq!(super::parse(bytes).to_bytes(),
+                   bytes);
+
+        let bytes = b"5:hello";
+        assert_eq!(super::parse(bytes).to_bytes(),
+                   bytes);
+
+        let bytes = b"li42e3:fooe";
+        assert_eq!(super::parse(bytes).to_bytes(),
+                   bytes);
+
+        let bytes = b"d3:fooi42ee";
+        assert_eq!(super::parse(bytes).to_bytes(),
+                   bytes);
+    }
+
 }
