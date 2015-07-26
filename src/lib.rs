@@ -1,14 +1,29 @@
+//! # bencode
+//!
+//! A library for decoding bencoded strings.
+
+
 use std::collections::HashMap;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Bencoded {
-    Integer(isize),             // `ix..xe` where `x..x` is the number encoded
-                                // in base 10 ASCII. Negative numbers permitted
-                                // (prefix `-`), negative zero not permitted
-    Bytestring(Vec<u8>),          // <length>:<contents>. Bytes not chars
-    List(Vec<Bencoded>),        // l<contents>e. No separators between elems
-    Dict(HashMap<Vec<u8>, Bencoded>), // d<contents>e, Keys are bytestrings, must appear
-                                   // lexicographically, no separators
+    /// An integer. The encoded format is `ix..xe` where `x..x` is the number
+    /// encoded in base 10 ASCII. Negative numbers are permitted (prefix `-`),
+    /// negative zero is not though.
+    Integer(isize),
+
+    /// A bytestring. The encoded format is `<length>:<contents>`. The length is
+    /// a number in base 10 ASCII. The contents are bytes not chars.
+    Bytestring(Vec<u8>),
+
+    /// A list. The encoded format is `l<contents>e`. There are no separators
+    /// between elements.
+    List(Vec<Bencoded>),
+
+    /// A dictionary. The encoded format is `d<key1><val1>...<keyn><valn>e`.
+    /// Keys are bytestrings, which must appear lexicographically. There are no
+    /// separators between elements.
+    Dict(HashMap<Vec<u8>, Bencoded>),
 }
 
 use Bencoded::*;
@@ -102,6 +117,7 @@ fn parse_bencoded(s: &[u8], idx: usize) -> (Bencoded, usize) {
     }
 }
 
+/// Parses a bencoded string.
 pub fn parse(s: &str) -> Bencoded {
     parse_bencoded(s.as_bytes(), 0).0
 }
