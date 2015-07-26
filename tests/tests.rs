@@ -26,3 +26,10 @@ fn bencoded_display() {
     let s = "d3:bar4:spam3:fooi42ee".to_string();
     assert_eq!(format!("{}", bencode::parse(s.as_bytes())), s);
 }
+
+#[test]
+fn get_dict() {
+    let s = b"d4:infod3:fooi42eee";
+    let parsed = bencode::parse(s);
+    assert_eq!(parsed.get(b"info").unwrap().to_string(), "d3:fooi42ee".to_string());
+}

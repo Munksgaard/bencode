@@ -29,6 +29,16 @@ pub enum Bencoded {
     Dict(HashMap<Vec<u8>, Bencoded>),
 }
 
+impl Bencoded {
+    pub fn get(&self, key: &[u8]) -> Option<&Bencoded> {
+        if let &Dict(ref map) = self {
+            map.get(key)
+        } else {
+            None
+        }
+    }
+}
+
 impl fmt::Display for Bencoded {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
