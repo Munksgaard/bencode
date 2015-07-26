@@ -118,8 +118,8 @@ fn parse_bencoded(s: &[u8], idx: usize) -> (Bencoded, usize) {
 }
 
 /// Parses a bencoded string.
-pub fn parse(s: &str) -> Bencoded {
-    parse_bencoded(s.as_bytes(), 0).0
+pub fn parse(s: &[u8]) -> Bencoded {
+    parse_bencoded(s, 0).0
 }
 
 #[cfg(test)]
@@ -177,7 +177,7 @@ mod tests {
         m.insert(b"bar".to_vec(), Bytestring(b"spam".to_vec()));
         m.insert(b"foo".to_vec(), Integer(42));
 
-        assert_eq!(super::parse("d3:bar4:spam3:fooi42ee"),
+        assert_eq!(super::parse(b"d3:bar4:spam3:fooi42ee"),
                    Dict(m));
     }
 }
