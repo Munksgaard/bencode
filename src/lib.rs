@@ -4,6 +4,9 @@
 
 
 use std::collections::HashMap;
+use std::fmt;
+
+use Bencoded::*;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Bencoded {
@@ -26,7 +29,51 @@ pub enum Bencoded {
     Dict(HashMap<Vec<u8>, Bencoded>),
 }
 
-use Bencoded::*;
+impl fmt::Display for Bencoded {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Integer(n) => {
+                write!(f, "i{}e", n)
+            },
+            Bytestring(ref v) => {
+                let mut s = String::new();
+                s.push_str(&v.len().to_string());
+                s.push(':');
+                for c in v {
+                    s.push(*c as char);
+                }
+                write!(f, "{}", s)
+            }
+            List(ref v) => {
+                let mut s = "l".to_string();
+
+                for elem in v {
+                    s.push_str(&elem.to_string());
+                }
+
+                s.push('e');
+                write!(f, "{}", s)
+            }
+            Dict(ref map) => {
+                let mut v = Vec::new();
+                for pair in map {
+                    v.push(pair);
+                }
+
+                v.sort_by(|&(a, _), &(b, _)| a.cmp(b));
+
+                let mut s = "d".to_string();
+
+                for (key, val) in v {
+                    s.push_str(&format!("{}{}", Bytestring(key.clone()), val))
+                }
+
+                s.push('e');
+                write!(f, "{}", s)
+            }
+        }
+    }
+}
 
 fn parse_integer(s: &[u8], mut idx: usize) -> (Bencoded, usize) {
     let mut n = 0;
@@ -179,5 +226,16 @@ mod tests {
 
         assert_eq!(super::parse(b"d3:bar4:spam3:fooi42ee"),
                    Dict(m));
+    }
+
+    #[test]
+    fn bencoded_display() {
+        assert_eq!(format!("{}", Integer(42)), "i42e");
+        assert_eq!(format!("{}", Bytestring(b"hej".to_vec())), "3:hej");
+        assert_eq!(format!("{}", List(vec!(Integer(42)))), "li42ee");
+
+        let mut m = HashMap::new();
+        m.insert(b"foo".to_vec(), Integer(42));
+        assert_eq!(format!("{}", Dict(m)), "d3:fooi42ee");
     }
 }
